@@ -15,6 +15,8 @@ if [ ! -d  "$dir" ]; then
 fi;
 cd $dir
 
+apt-get install nginx
+
 echo ANACONDA ENVIRONMENT
 cd ~
 wget https://repo.continuum.io/archive/Anaconda3-5.0.0.1-Linux-x86_64.sh
@@ -31,7 +33,7 @@ conda update conda
 conda update anaconda
 conda create -n finalProject python=3.6 anaconda
 source activate finalProject
-conda install pip numpy scipy theano scikit-learn jupyter flask nginx gunicorn
+conda install pip numpy scipy theano scikit-learn jupyter flask gunicorn
 conda install -c conda-forge bcolz
 pip install keras
 
