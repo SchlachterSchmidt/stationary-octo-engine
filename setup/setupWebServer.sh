@@ -65,8 +65,8 @@ After=network.target
 User=ubuntu
 Group=www-data
 WorkingDirectory=/home/ubuntu/finalProject
-Environment=\"PATH=/home/ubuntu/anaconda/finalproject/bin\"
-ExecStart=/home/ubuntu/anaconda/finalproject/bin/gunicorn --workers 3 --bind unix:finalProject.sock -m 007 wsgi:app
+Environment="PATH=/home/ubuntu/anaconda/finalproject/bin"
+ExecStart=/home/ubuntu/anaconda/§finalproject/bin/gunicorn --workers 3 --bind unix:finalProject.sock -m 007 wsgi:app
 [Install]
 WantedBy=multi-user.target" > /etc/systemd/system/finalProject.service
 
