@@ -1,6 +1,9 @@
-from flask import Flask, make_response, jsonify
+"""Module containing API endpoints."""
+
+from flask import make_response, jsonify
 
 from app import app
+
 
 @app.route('/api/v0.1/hello', methods=['GET'])
 def hello():
