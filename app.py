@@ -1,8 +1,13 @@
 """REST API prividing access to webserver resources for mobile agents."""
 
 from flask import Flask, make_response, jsonify
+from flask_sqlalchemy import SQLAlchemy
+import os
+
 
 app = Flask(__name__)
+app.config.from_object('config.Config')
+db = SQLAlchemy(app)
 
 
 @app.route('/api/v0.1/hello', methods=['GET'])
@@ -19,3 +24,4 @@ def not_found(error):
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
+
