@@ -15,7 +15,3 @@ def hello():
 def not_found(error):
     """Error handler to build 404 in JSON."""
     return make_response(jsonify({'error': 'Not found'}), 404)
-
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0')
