@@ -1,7 +1,11 @@
+"""Final project flask app config file."""
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+
 class Config(object):
+    """Config super class."""
+
     DEBUG = True
     TESTING = True
     CSRF_ENABLED = True
