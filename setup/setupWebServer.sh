@@ -35,6 +35,8 @@ conda create -n finalProject python=3.6 anaconda
 source activate finalProject
 conda install pip numpy scipy theano scikit-learn jupyter flask gunicorn
 conda install -c conda-forge bcolz
+conda install -c conda-forge flask-httpauth
+conda install -c conda-forge werkzeug 
 pip install keras
 
 echo CREATING SAMPLE FLASK app
