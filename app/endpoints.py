@@ -16,10 +16,9 @@ def hello():
 def get_user(user_id):
     """Return a single user by ID."""
     user = User.query.get_or_404(user_id)
-    return make_response(jsonify({'firstname': user.firstname, 
-'lastname': user.lastname, 
-'email': user.email,
-'username': user.username}))
+    return make_response(
+        jsonify({'firstname': user.firstname, 'lastname': user.lastname,
+                 'email': user.email, 'username': user.username}))
 
 
 @app.errorhandler(404)
