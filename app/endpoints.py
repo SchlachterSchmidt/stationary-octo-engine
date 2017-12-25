@@ -16,13 +16,15 @@ def hello():
 
 @app.route('/api/v0.1/users', methods=['POST'])
 def register_user():
-    """Create a new user"""
+    """Create a new user."""
     username = request.json.get('username')
     firstname = request.json.get('firstname')
     lastname = request.json.get('lastname')
     email = request.json.get('email')
     password = request.json.get('password')
-    user = User(username = username, firstname = firstname, lastname = lastname, email = email)
+    user = User(
+                username=username, firstname=firstname, lastname=lastname,
+                email=email)
     user.hash_password(password)
     db.session.add(user)
     db.session.commit()
@@ -47,7 +49,8 @@ def not_found(error):
 
 @auth.verify_password
 def verify_password(username, password):
-    user = User.query.filter_by(username = username).first()
+    """Verify provided username / password pair against user record in db."""
+    user = User.query.filter_by(username=username).first()
     if not user or not user.verify_password(password):
         return False
     return True
