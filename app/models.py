@@ -1,6 +1,6 @@
 """Module contains all database models."""
 from app import db
-
+from passlib.apps import custom_app_context as pwd_context
 
 class User(db.Model):
     """User model."""
@@ -10,7 +10,16 @@ class User(db.Model):
     lastname = db.Column(db.String(64), index=True, nullable=False)
     email = db.Column(db.String(64), index=True, nullable=False)
     username = db.Column(db.String(64), index=True, nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
     images = db.relationship('ImageLink', backref='Creator', lazy=True)
+
+    def hash_password(self, password):
+        """Hash plain text user password and store."""
+        self.password_hash = pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        """Verify plain text user provided password against stored hash."""
+        return pwd_context.verify(password, self.password_hash)
 
     def __repr__(self):
         """User representation."""
