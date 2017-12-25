@@ -22,13 +22,17 @@ def register_user():
     lastname = request.json.get('lastname')
     email = request.json.get('email')
     password = request.json.get('password')
+
     if username is None or firstname is None or lastname is None or email is None or password is None:
         abort(400, 'required parameter missing')
-    if User.query.filter_by(username = username).first is not None:
+
+    if User.query.filter_by(username=username).first() is not None:
         abort(400, 'username already exists')
+
     user = User(
                 username=username, firstname=firstname, lastname=lastname,
                 email=email)
+
     user.hash_password(password)
     db.session.add(user)
     db.session.commit()
