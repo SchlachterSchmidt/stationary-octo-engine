@@ -1,6 +1,6 @@
 """Module containing API endpoints."""
 
-from flask import make_response, jsonify, request
+from flask import make_response, jsonify, request, abort
 from flask_httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
 
@@ -22,6 +22,10 @@ def register_user():
     lastname = request.json.get('lastname')
     email = request.json.get('email')
     password = request.json.get('password')
+    if username is None or firstname is None or lastname is None or email is None or password is None:
+        abort(400, 'required parameter missing')
+    if User.query.filter_by(username = username).first is not None:
+        abort(400, 'username already exists')
     user = User(
                 username=username, firstname=firstname, lastname=lastname,
                 email=email)
@@ -45,6 +49,12 @@ def get_user(user_id):
 def not_found(error):
     """Error handler to build 404 in JSON."""
     return make_response(jsonify({'error': 'Not found'}), 404)
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    """Error handler to build 400 error in JSON"""
+    return make_response(jsonify({'error': error.description}), 400)
 
 
 @auth.verify_password
