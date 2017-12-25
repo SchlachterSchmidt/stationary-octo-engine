@@ -16,4 +16,5 @@ echo "\q <- to disconnect"
 echo "Installing SQLAlchemy and psycopg2 into conda environment"
 conda install psycopg2
 conda install -c conda-forge flask-sqlalchemy
-conda install -c conda-forge flask-migrate 
+conda install -c conda-forge flask-migrate
+conda install -c conda-forge flask-script
