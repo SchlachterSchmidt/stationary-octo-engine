@@ -2,6 +2,8 @@
 
 from flask import make_response, jsonify, request, abort
 from flask_httpauth import HTTPBasicAuth
+from werkzeug.utils import secure_filename
+
 auth = HTTPBasicAuth()
 
 from app import app, db
@@ -49,6 +51,18 @@ def get_user(user_id):
                  'email': user.email, 'username': user.username}))
 
 
+@app.route('/api/v0.1/classifier', methods=['POST'])
+@auth.login_required
+def classify():
+    """Accept image file and return classification."""
+    if 'file' not in request.files:
+        abort(400, 'no file to classify provided')
+    file = request.files['file']
+    if file and allowed_file_type(file.filename):
+        filename = secure_filename(file.filename)
+    return filename
+
+
 @app.errorhandler(404)
 def not_found(error):
     """Error handler to build 404 in JSON."""
@@ -68,3 +82,9 @@ def verify_password(username, password):
     if not user or not user.verify_password(password):
         return False
     return True
+
+
+def allowed_file_type(filename):
+    """Check if file type that is being posted is permitted."""
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
