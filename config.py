@@ -12,3 +12,5 @@ class Config(object):
     SECRET_KEY = 'this-should-be-kept-secret'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
+
+    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
