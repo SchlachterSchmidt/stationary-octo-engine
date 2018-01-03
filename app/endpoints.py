@@ -60,7 +60,7 @@ def classify():
     file = request.files['file']
     if file and allowed_file_type(file.filename):
         filename = secure_filename(file.filename)
-    return filename
+    return make_response(jsonify({'filename': filename}), 200)
 
 
 @app.errorhandler(404)
