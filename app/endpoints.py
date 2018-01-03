@@ -25,7 +25,11 @@ def register_user():
     email = request.json.get('email')
     password = request.json.get('password')
 
-    if username is None or firstname is None or lastname is None or email is None or password is None:
+    if username is None or \
+       firstname is None or \
+       lastname is None or \
+       email is None or \
+       password is None:
         abort(400, 'required parameter missing')
 
     if User.query.filter_by(username=username).first() is not None:
@@ -58,8 +62,12 @@ def classify():
     if 'data' not in request.files:
         abort(400, 'no file to classify provided')
     file = request.files['data']
-    if file and allowed_file_type(file.filename):
+    if not allowed_file_type(file.filename):
+        abort(400, 'illegal file type')
+    if file:
         filename = secure_filename(file.filename)
+    else:
+        abort(400, 'unable to read file from request')
     return make_response(jsonify({'filename': filename}), 200)
 
 
@@ -71,7 +79,7 @@ def not_found(error):
 
 @app.errorhandler(400)
 def bad_request(error):
-    """Error handler to build 400 error in JSON"""
+    """Error handler to build 400 error in JSON."""
     return make_response(jsonify({'error': error.description}), 400)
 
 
