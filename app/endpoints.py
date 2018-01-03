@@ -55,9 +55,9 @@ def get_user(user_id):
 @auth.login_required
 def classify():
     """Accept image file and return classification."""
-    if 'file' not in request.files:
+    if 'data' not in request.files:
         abort(400, 'no file to classify provided')
-    file = request.files['file']
+    file = request.files['data']
     if file and allowed_file_type(file.filename):
         filename = secure_filename(file.filename)
     return make_response(jsonify({'filename': filename}), 200)
