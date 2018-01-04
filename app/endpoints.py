@@ -8,6 +8,7 @@ auth = HTTPBasicAuth()
 
 from app import app, db
 from .models import User
+from .classifier import model
 
 
 @app.route('/api/v0.1/hello', methods=['GET'])
@@ -68,7 +69,9 @@ def classify():
         filename = secure_filename(file.filename)
     else:
         abort(400, 'unable to read file from request')
-    return make_response(jsonify({'filename': filename}), 200)
+    prediction = model.predict(file)
+    return make_response(jsonify({'filename': filename,
+                                  'prediction': prediction}), 200)
 
 
 @app.errorhandler(404)
