@@ -10,6 +10,8 @@ from app import app, db
 from .models import User
 from .classifier import Classifier
 
+classifier = Classifier()
+
 
 @app.route('/api/v0.1/hello', methods=['GET'])
 def hello():
@@ -70,7 +72,6 @@ def classify():
     else:
         abort(400, 'unable to read file from request')
     image = fileStorage.read()
-    classifier = Classifier()
     prediction = classifier.classify(image)
     return make_response(jsonify({'filename': fileStorage.filename,
                                   'prediction': prediction}), 200)
