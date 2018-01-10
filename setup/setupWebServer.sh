@@ -36,8 +36,9 @@ source activate finalProject
 conda install pip numpy scipy theano scikit-learn jupyter flask gunicorn
 conda install -c conda-forge bcolz
 conda install -c conda-forge flask-httpauth
-conda install -c conda-forge flask-sqlalchemy 
+conda install -c conda-forge flask-sqlalchemy
 conda install -c anaconda passlib
+conda install -c menpo opencv3
 pip install keras
 
 echo CREATING SAMPLE FLASK app

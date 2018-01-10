@@ -268,5 +268,5 @@ dependencies:
   - prompt-toolkit==1.0.15
   - ruamel-yaml==0.11.14
   - tables==3.4.2
-prefix: /home/ubuntu/anaconda/envs/finalProject
+prefix: /home/phg/anaconda/envs/finalProject
 
