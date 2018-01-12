@@ -41,7 +41,7 @@ class ImageRef(db.Model):
     __tablename__ = 'image_refs'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer, db.ForeignKey('user.id'), index=True, nullable=False)
+        db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)
     link = db.Column(db.String(200), index=True, nullable=False)
     predicted_label = db.Column(db.String(10), index=True, nullable=False)
     taken_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
@@ -67,7 +67,7 @@ class HistoryRecord(db.Model):
     __tablename__ = 'history_records'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
-        db.Integer, db.ForeignKey('user.id'), index=True, nullable=False)
+        db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)
     history = db.Column(JSON)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
