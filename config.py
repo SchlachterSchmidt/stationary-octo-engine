@@ -11,7 +11,6 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = os.environ['SECRET_KEY']
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.environ['TEST_DATABASE_URL']
 
     ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
@@ -22,9 +21,22 @@ class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ['TEST_DATABASE_URL']
 
 
+class DevConfig(Config):
+    """Config class for dev environment."""
+
+    SQLALCHEMY_DATABASE_URI = os.environ['DEV_DATABASE_URL']
+
+
 class PrdConfig(Config):
     """Config class for prod environment."""
 
     DEBUG = False
     TESTING = False
     SQLALCHEMY_DATABASE_URI = os.environ['PRD_DATABASE_URL']
+
+
+app_config = {
+    'development': DevConfig,
+    'testing': TestConfig,
+    'production': PrdConfig,
+}
