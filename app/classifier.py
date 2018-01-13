@@ -35,4 +35,5 @@ class Classifier:
         np_image_tensor = np.swapaxes(np.swapaxes(np_image_tensor, 1, 3), 2, 3)
         # making prediction on the image and returning probabilities
         # for each class as list (as ndarray are not jsonify-able)
-        return self.model.predict(np_image_tensor).tolist()
+        probabilities = self.model.predict(np_image_tensor).tolist()[0]
+        return probabilities, np.asscalar(np.argmax(probabilities))
