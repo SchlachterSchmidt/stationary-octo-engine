@@ -3,7 +3,6 @@ from flask_script import Manager
 
 from app import app, db
 
-app.config.from_object('config.Config')
 
 migrate = Migrate(app, db)
 manager = Manager(app)
