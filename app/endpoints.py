@@ -9,8 +9,11 @@ auth = HTTPBasicAuth()
 from app import app, db
 from .models import User
 from .classifier import Classifier
+from .db_writer import DB_Writer
+
 
 classifier = Classifier()
+db_writer = DB_Writer()
 
 
 @app.route('/api/v0.1/hello', methods=['GET'])
@@ -72,9 +75,12 @@ def classify():
     else:
         abort(400, 'unable to read file from request')
     image = fileStorage.read()
-    prediction = classifier.classify(image)
+    probabilities, prediction = classifier.classify(image)
+    db_writer.write(image, fileStorage.filename, prediction, probabilities,
+                    request.authorization.username)
     return make_response(jsonify({'filename': fileStorage.filename,
-                                  'prediction': prediction}), 200)
+                                  'prediction': prediction,
+                                  'probabilities': probabilities}), 200)
 
 
 @app.errorhandler(404)
