@@ -39,6 +39,7 @@ conda install -c conda-forge flask-httpauth
 conda install -c conda-forge flask-sqlalchemy
 conda install -c anaconda passlib
 conda install -c menpo opencv3
+conda install -c anaconda boto3
 pip install keras
 
 echo CREATING SAMPLE FLASK app
