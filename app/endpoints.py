@@ -67,18 +67,22 @@ def classify():
     """Accept image file and return classification."""
     if 'data' not in request.files:
         abort(400, 'no file to classify provided')
-    fileStorage = request.files['data']
-    if not allowed_file_type(fileStorage.filename):
+    fileStoreObj = request.files['data']
+    if not allowed_file_type(fileStoreObj.filename):
         abort(400, 'illegal file type')
-    if fileStorage:
-        fileStorage.filename = secure_filename(fileStorage.filename)
+    if fileStoreObj:
+        fileStoreObj.filename = secure_filename(fileStoreObj.filename)
     else:
         abort(400, 'unable to read file from request')
-    image = fileStorage.read()
+
+    image = fileStoreObj.read()
+
     probabilities, prediction = classifier.classify(image)
-    db_writer.write(image, fileStorage.filename, prediction, probabilities,
+
+    db_writer.write(image, fileStoreObj, prediction, probabilities,
                     request.authorization.username)
-    return make_response(jsonify({'filename': fileStorage.filename,
+
+    return make_response(jsonify({'filename': fileStoreObj.filename,
                                   'prediction': prediction,
                                   'probabilities': probabilities}), 200)
 
