@@ -1,7 +1,6 @@
 """Module writing posted image and prediction to database."""
 
-from app import db
-from .models import ImageRef, User
+from ..models import ImageRef, User, db
 from .s3_helper import upload_file_to_s3
 
 

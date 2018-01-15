@@ -2,25 +2,21 @@
 
 from flask import Flask
 from config import app_config
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
 
 
-def create_app(app_config_class):
+def create_app(config_mode='development'):
     """Wrapping app creation in factory according to specified config."""
-
     # create app and load config
     app = Flask(__name__)
-    app.config.from_object(app_config[app_config_class])
+    app.config.from_object(app_config[config_mode])
 
-    # register API blueprint defined in ./api/__init__.py
+    # register API blueprint defined in ./api/__init__.py
     from .api import api
     app.register_blueprint(api)
 
-    from .model import db
+    from .models import db
 
-    # register app with SQLAlchemy
+    # register app with SQLAlchemy
     db.app = app
     db.init_app(app)
 

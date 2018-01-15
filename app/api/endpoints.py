@@ -1,20 +1,19 @@
 """Module containing API endpoints."""
 
-from flask import make_response, jsonify, request, abort
+from flask import make_response, jsonify, request, abort, current_app
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.utils import secure_filename
 
-auth = HTTPBasicAuth()
 
 from . import api
-from .models import User, db
-from .classifier import Classifier
-from .helpers.db_writer import DB_Writer
-from ..config import Config
+from ..models import User, db
+from ..classifier import Classifier
+from ..helpers.db_writer import DB_Writer
 
 
 classifier = Classifier()
 db_writer = DB_Writer()
+auth = HTTPBasicAuth()
 
 
 @api.route('/api/v0.1/hello', methods=['GET'])
@@ -111,5 +110,6 @@ def verify_password(username, password):
 
 def allowed_file_type(filename):
     """Check if file type that is being posted is permitted."""
+    app = current_app._get_current_object()
     return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in Config['ALLOWED_EXTENSIONS']
+        filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
