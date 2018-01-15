@@ -6,23 +6,24 @@ from werkzeug.utils import secure_filename
 
 auth = HTTPBasicAuth()
 
-from app import app, db
-from .models import User
+from . import api
+from .models import User, db
 from .classifier import Classifier
-from .db_writer import DB_Writer
+from .helpers.db_writer import DB_Writer
+from ..config import Config
 
 
 classifier = Classifier()
 db_writer = DB_Writer()
 
 
-@app.route('/api/v0.1/hello', methods=['GET'])
+@api.route('/api/v0.1/hello', methods=['GET'])
 def hello():
     """Hello World API call."""
     return make_response(jsonify({'hello': 'world'}), 200)
 
 
-@app.route('/api/v0.1/users', methods=['POST'])
+@api.route('/api/v0.1/users', methods=['POST'])
 def register_user():
     """Create a new user."""
     username = request.json.get('username')
@@ -51,7 +52,7 @@ def register_user():
     return make_response(jsonify({'username': user.username}), 201)
 
 
-@app.route('/api/v0.1/users/<int:user_id>', methods=['GET'])
+@api.route('/api/v0.1/users/<int:user_id>', methods=['GET'])
 @auth.login_required
 def get_user(user_id):
     """Return a single user by ID."""
@@ -61,7 +62,7 @@ def get_user(user_id):
                  'email': user.email, 'username': user.username}))
 
 
-@app.route('/api/v0.1/classifier', methods=['POST'])
+@api.route('/api/v0.1/classifier', methods=['POST'])
 @auth.login_required
 def classify():
     """Accept image file and return classification."""
@@ -87,13 +88,13 @@ def classify():
                                   'probabilities': probabilities}), 200)
 
 
-@app.errorhandler(404)
+@api.errorhandler(404)
 def not_found(error):
     """Error handler to build 404 in JSON."""
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
-@app.errorhandler(400)
+@api.errorhandler(400)
 def bad_request(error):
     """Error handler to build 400 error in JSON."""
     return make_response(jsonify({'error': error.description}), 400)
@@ -111,4 +112,4 @@ def verify_password(username, password):
 def allowed_file_type(filename):
     """Check if file type that is being posted is permitted."""
     return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+        filename.rsplit('.', 1)[1].lower() in Config['ALLOWED_EXTENSIONS']

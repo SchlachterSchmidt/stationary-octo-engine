@@ -17,4 +17,4 @@ __pycache__
 .shadow/*
 migrations
 migrations/*
-static/*.h5
+app/static/*.h5

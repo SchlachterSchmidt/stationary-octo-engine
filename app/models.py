@@ -1,8 +1,11 @@
 """Module contains all database models."""
-from app import db
+
+from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
 from sqlalchemy.dialects.postgresql import JSON
 import datetime
+
+db = SQLAlchemy()
 
 
 class User(db.Model):
