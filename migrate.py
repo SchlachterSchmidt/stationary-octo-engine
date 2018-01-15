@@ -1,8 +1,10 @@
+"""Managing DB migrations the easy way."""
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 
-from app import app, db
+from app import create_app, db
 
+app = create_app(config_mode='development')
 
 migrate = Migrate(app, db)
 manager = Manager(app)
