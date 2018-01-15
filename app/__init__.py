@@ -2,8 +2,7 @@
 
 from flask import Flask
 from config import app_config
-from flask.ext.sqlalchemy import SQLAlchemy
-
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
