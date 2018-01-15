@@ -18,6 +18,8 @@ def create_app(app_config_class):
     from .api import api
     app.register_blueprint(api)
 
+    from .model import db
+
     # register app with SQLAlchemy
     db.app = app
     db.init_app(app)
