@@ -1,3 +1,4 @@
+"""Basic User enpoint unit test."""
 import unittest
 import os
 import json
@@ -21,7 +22,7 @@ class UserTestCase(unittest.TestCase):
             db.create_all()
 
     def test_user_creation(self):
-        """Test API can create a new user (POST request)"""
+        """Test API can create a new user (POST request)."""
         res = self.client().post('api/v0.1/users', data=self.user)
         self.assertEqual(res.status_code, 201)
 
