@@ -41,6 +41,9 @@ def register_user():
     if User.query.filter_by(username=username).first() is not None:
         abort(400, 'username already exists')
 
+    if User.query.filter_by(email=email).first() is not None:
+        abort(400, 'email already taken')
+
     user = User(
                 username=username, firstname=firstname, lastname=lastname,
                 email=email)
