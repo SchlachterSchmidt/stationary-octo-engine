@@ -2,9 +2,6 @@
 
 from flask import Flask
 from config import app_config
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
 
 
 def create_app(config_mode='development'):
