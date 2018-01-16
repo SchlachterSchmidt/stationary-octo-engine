@@ -1,4 +1,5 @@
 """Basic User endpoint unit test."""
+
 import unittest
 import json
 from app import create_app

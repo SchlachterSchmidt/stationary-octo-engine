@@ -45,6 +45,7 @@ class ClassifierTestCase(unittest.TestCase):
                                               headers=headers,
                                               data=payload)
 
+        # assert user was created
         self.assertEqual(createUser.status_code, 201)
         self.assertEqual(postResponse.status_code, 200)
         self.assertIn('filename', str(postResponse.data))
@@ -60,10 +61,22 @@ class ClassifierTestCase(unittest.TestCase):
                                         content_type='application/json')
 
 
-        # TODO: post file extension not supported in config.py
+        with open('tests/static/test_textfile.txt', 'rb') as textfile:
+            # base 64 encoded version of the username and password
+            user_and_credentials = str(b64encode(b'hansi:python'))[2:-1]
+            headers = dict(Authorization="Basic " + user_and_credentials,
+                           Content_type="multipart/form-data")
+            # textfile data as byte stream, in 'data' field of request
+            payload = dict(data=(io.BytesIO(textfile.read()), 'test_textfile.txt'))
+
+            postResponse = self.client().post('api/v0.1/classifier',
+                                              headers=headers,
+                                              data=payload)
 
         # assert user was created
         self.assertEqual(createUser.status_code, 201)
+        self.assertEqual(postResponse.status_code, 400)
+        self.assertIn('illegal file type', str(postResponse.data))
 
     def tearDown(self):
         """Teardown all initialized variables."""
