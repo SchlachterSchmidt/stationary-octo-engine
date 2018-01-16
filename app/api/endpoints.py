@@ -39,7 +39,7 @@ def register_user():
         abort(400, 'required parameter missing')
 
     if User.query.filter_by(username=username).first() is not None:
-        abort(400, 'username already exists')
+        abort(400, 'username already taken')
 
     if User.query.filter_by(email=email).first() is not None:
         abort(400, 'email already taken')
