@@ -10,8 +10,29 @@ manager = Manager(app)
 
 
 @manager.command
-def test():
-    """Run the unit tests in /tests dir."""
+def classifier():
+    """Run the classifier unit tests in /tests dir."""
+    tests = unittest.TestLoader().discover('./tests',
+                                           pattern='test_classifier*.py')
+    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    if result.wasSuccessful():
+        return 0
+    return 1
+
+
+@manager.command
+def user():
+    """Run the user unit tests in /tests dir."""
+    tests = unittest.TestLoader().discover('./tests', pattern='test_user*.py')
+    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    if result.wasSuccessful():
+        return 0
+    return 1
+
+
+@manager.command
+def all():
+    """Run all unit tests in /tests dir."""
     tests = unittest.TestLoader().discover('./tests', pattern='test*.py')
     result = unittest.TextTestRunner(verbosity=2).run(tests)
     if result.wasSuccessful():
