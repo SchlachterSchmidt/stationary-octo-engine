@@ -16,11 +16,19 @@ db_writer = DB_Writer()
 auth = HTTPBasicAuth()
 
 
+#                            #
+#    HELLO WORLD API CALL    #
+#                            #
+
 @api.route('/api/v0.1/hello', methods=['GET'])
 def hello():
     """Hello World API call."""
     return make_response(jsonify({'hello': 'world'}), 200)
 
+
+#                       #
+#    USERS API BLOCK    #
+#                       #
 
 @api.route('/api/v0.1/users', methods=['POST'])
 def register_user():
@@ -64,6 +72,10 @@ def get_user(user_id):
                  'email': user.email, 'username': user.username}))
 
 
+#                            #
+#    CLASSIFIER API BLOCK    #
+#                            #
+
 @api.route('/api/v0.1/classifier', methods=['POST'])
 @auth.login_required
 def classify():
@@ -89,6 +101,10 @@ def classify():
                                   'prediction': prediction,
                                   'probabilities': probabilities}), 200)
 
+
+#                           #
+#    UTILS AND CALLBACKS    #
+#                           #
 
 @api.errorhandler(404)
 def not_found(error):
