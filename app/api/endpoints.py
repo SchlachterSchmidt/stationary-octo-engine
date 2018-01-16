@@ -106,16 +106,22 @@ def classify():
 #    UTILS AND CALLBACKS    #
 #                           #
 
-@api.errorhandler(404)
-def not_found(error):
-    """Error handler to build 404 in JSON."""
-    return make_response(jsonify({'error': 'Not found'}), 404)
-
-
 @api.errorhandler(400)
 def bad_request(error):
     """Error handler to build 400 error in JSON."""
     return make_response(jsonify({'error': error.description}), 400)
+
+
+@api.errorhandler(401)
+def unauthorized(error):
+    """Error handler to build 401 in JSON."""
+    return make_response(jsonify({'error': 'not authorized'}), 404)
+
+
+@api.errorhandler(404)
+def not_found(error):
+    """Error handler to build 404 in JSON."""
+    return make_response(jsonify({'error': 'Not found'}), 404)
 
 
 @auth.verify_password
