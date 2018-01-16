@@ -37,6 +37,9 @@ conda install pip numpy scipy theano scikit-learn jupyter flask gunicorn
 conda install -c conda-forge bcolz
 conda install -c conda-forge flask-httpauth
 conda install -c conda-forge flask-sqlalchemy
+conda install psycopg2
+conda install -c conda-forge flask-migrate
+conda install -c conda-forge flask-script
 conda install -c anaconda passlib
 conda install -c menpo opencv3
 conda install -c anaconda boto3
