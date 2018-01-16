@@ -67,7 +67,8 @@ class ClassifierTestCase(unittest.TestCase):
             headers = dict(Authorization="Basic " + user_and_credentials,
                            Content_type="multipart/form-data")
             # textfile data as byte stream, in 'data' field of request
-            payload = dict(data=(io.BytesIO(textfile.read()), 'test_textfile.txt'))
+            payload = dict(data=(io.BytesIO(textfile.read()),
+                                 'test_textfile.txt'))
 
             postResponse = self.client().post('api/v0.1/classifier',
                                               headers=headers,
