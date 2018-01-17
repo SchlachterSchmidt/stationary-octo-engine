@@ -5,6 +5,8 @@ from passlib.apps import custom_app_context as pwd_context
 from sqlalchemy.dialects.postgresql import JSON
 import datetime
 
+from .helpers.s3_helper import upload_file_to_s3
+
 db = SQLAlchemy()
 
 
@@ -33,6 +35,11 @@ class User(db.Model):
         """Verify plain text user provided password against stored hash."""
         return pwd_context.verify(password, self.password_hash)
 
+    def save(self):
+        """Save user to DB. This includes create and update operations."""
+        db.session.add(self)
+        db.session.commit()
+
     def __repr__(self):
         """User representation."""
         return '<user %r>' % (self.username)
@@ -58,6 +65,30 @@ class ImageRef(db.Model):
     c7 = db.Column(db.Float)
     c8 = db.Column(db.Float)
     c9 = db.Column(db.Float)
+
+    def __init__(self, image, prediction, probabilities, user, fileStoreObj):
+        """Extract class variables from the provided params."""
+        self.image = image
+        self.fileStoreObj = fileStoreObj
+
+        self.user_id = User.query.filter_by(username=user).first().id,
+        self.predicted_label = prediction
+        self.c0 = probabilities[0]
+        self.c1 = probabilities[1]
+        self.c2 = probabilities[2]
+        self.c3 = probabilities[3]
+        self.c4 = probabilities[4]
+        self.c5 = probabilities[5]
+        self.c6 = probabilities[6]
+        self.c7 = probabilities[7]
+        self.c8 = probabilities[8]
+        self.c9 = probabilities[9]
+
+    def save(self):
+        """Saving image aata to S2, and image ref object to DB."""
+        self.link = upload_file_to_s3(self.image, self.fileStoreObj)
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         """Image representation."""
