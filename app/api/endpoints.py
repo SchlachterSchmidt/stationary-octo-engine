@@ -6,13 +6,11 @@ from werkzeug.utils import secure_filename
 
 
 from . import api
-from ..models import User, db
+from ..models import User, ImageRef
 from ..classifier import Classifier
-from ..helpers.db_writer import DB_Writer
 
 
 classifier = Classifier()
-db_writer = DB_Writer()
 auth = HTTPBasicAuth()
 
 
@@ -52,13 +50,14 @@ def register_user():
     if User.query.filter_by(email=email).first() is not None:
         abort(400, 'email already taken')
 
-    user = User(
-                username=username, firstname=firstname, lastname=lastname,
+    user = User(username=username,
+                firstname=firstname,
+                lastname=lastname,
                 email=email)
 
     user.hash_password(password)
-    db.session.add(user)
-    db.session.commit()
+    user.save()
+
     return make_response(jsonify({'username': user.username}), 201)
 
 
@@ -81,21 +80,26 @@ def get_user(user_id):
 def classify():
     """Accept image file and return classification."""
     if 'data' not in request.files:
-        abort(400, 'no file to classify provided')
+        abort(400, 'no file in request')
     fileStoreObj = request.files['data']
     if not allowed_file_type(fileStoreObj.filename):
         abort(400, 'illegal file type')
     if fileStoreObj:
         fileStoreObj.filename = secure_filename(fileStoreObj.filename)
     else:
-        abort(400, 'unable to read file from request')
+        abort(400, 'unable to read file')
 
     image = fileStoreObj.read()
 
     probabilities, prediction = classifier.classify(image)
 
-    db_writer.write(image, fileStoreObj, prediction, probabilities,
-                    request.authorization.username)
+    image_ref = ImageRef(image=image,
+                         fileStoreObj=fileStoreObj,
+                         prediction=prediction,
+                         probabilities=probabilities,
+                         user=request.authorization.username)
+
+    image_ref.save()
 
     return make_response(jsonify({'filename': fileStoreObj.filename,
                                   'prediction': prediction,
@@ -112,12 +116,6 @@ def bad_request(error):
     return make_response(jsonify({'error': error.description}), 400)
 
 
-@api.errorhandler(401)
-def unauthorized(error):
-    """Error handler to build 401 in JSON."""
-    return make_response(jsonify({'error': 'not authorized'}), 404)
-
-
 @api.errorhandler(404)
 def not_found(error):
     """Error handler to build 404 in JSON."""
@@ -131,6 +129,12 @@ def verify_password(username, password):
     if not user or not user.verify_password(password):
         return False
     return True
+
+
+@auth.error_handler
+def unauthorized():
+    """Error handler to build 401 in JSON."""
+    return make_response(jsonify({'error': 'not authorized'}), 401)
 
 
 def allowed_file_type(filename):
