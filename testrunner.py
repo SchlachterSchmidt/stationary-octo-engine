@@ -10,6 +10,17 @@ manager = Manager(app)
 
 
 @manager.command
+def history():
+    """Run the classifier unit tests in /tests dir."""
+    tests = unittest.TestLoader().discover('./tests',
+                                           pattern='test_history*.py')
+    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    if result.wasSuccessful():
+        return 0
+    return 1
+
+
+@manager.command
 def classifier():
     """Run the classifier unit tests in /tests dir."""
     tests = unittest.TestLoader().discover('./tests',
