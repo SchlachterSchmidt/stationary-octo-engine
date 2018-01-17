@@ -47,6 +47,7 @@ class ClassifierTestCase(unittest.TestCase):
 
         # assert user was created
         self.assertEqual(createUser.status_code, 201)
+        # assert response code and message are as expected
         self.assertEqual(postResponse.status_code, 200)
         self.assertIn('filename', str(postResponse.data))
         self.assertIn('test.jpg', str(postResponse.data))
@@ -76,6 +77,7 @@ class ClassifierTestCase(unittest.TestCase):
 
         # assert user was created
         self.assertEqual(createUser.status_code, 201)
+        # assert response code and message are as expected
         self.assertEqual(postResponse.status_code, 400)
         self.assertIn('illegal file type', str(postResponse.data))
 
