@@ -21,7 +21,7 @@ def classifier():
 
 
 @manager.command
-def user():
+def users():
     """Run the user unit tests in /tests dir."""
     tests = unittest.TestLoader().discover('./tests', pattern='test_user*.py')
     result = unittest.TextTestRunner(verbosity=2).run(tests)
@@ -31,7 +31,7 @@ def user():
 
 
 @manager.command
-def all():
+def full():
     """Run all unit tests in /tests dir."""
     tests = unittest.TestLoader().discover('./tests', pattern='test*.py')
     result = unittest.TextTestRunner(verbosity=2).run(tests)
