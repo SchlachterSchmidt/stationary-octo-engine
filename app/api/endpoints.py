@@ -97,8 +97,7 @@ def classify():
                          fileStoreObj=fileStoreObj,
                          prediction=prediction,
                          probabilities=probabilities,
-                         user=request.authorization.username)
-
+                         username=request.authorization.username)
     image_ref.save()
 
     return make_response(jsonify({'filename': fileStoreObj.filename,
