@@ -58,7 +58,11 @@ def register_user():
     user.hash_password(password)
     user.save()
 
-    return make_response(jsonify({'username': user.username}), 201)
+    return make_response(jsonify({'id': user.id,
+                                  'firstname': user.firstname,
+                                  'lastname': user.lastname,
+                                  'email': user.email,
+                                  'username': user.username}), 201)
 
 
 @api.route('/api/v0.1/users/<int:user_id>', methods=['GET'])
@@ -66,9 +70,55 @@ def register_user():
 def get_user(user_id):
     """Return a single user by ID."""
     user = User.query.get_or_404(user_id)
-    return make_response(
-        jsonify({'firstname': user.firstname, 'lastname': user.lastname,
-                 'email': user.email, 'username': user.username}))
+    requester = User.query.filter_by(
+        username=request.authorization.username).first()
+    # if user making the request is not the same user that is being updated:
+    if user.id is not requester.id:
+        abort(401, 'you do not have access to this')
+    return make_response(jsonify({'id': user.id,
+                                  'firstname': user.firstname,
+                                  'lastname': user.lastname,
+                                  'email': user.email,
+                                  'username': user.username}), 200)
+
+
+@api.route('/api/v0.1/users/<int:user_id>', methods=['PUT'])
+@auth.login_required
+def update_user(user_id):
+    """Update a single user by ID."""
+    user = User.query.get_or_404(user_id)
+    requester = User.query.filter_by(
+        username=request.authorization.username).first()
+    # if user making the request is not the same user that is being updated:
+    if user.id is not requester.id:
+        abort(401, 'you do not have access to this')
+
+    payload = request.get_json()
+
+    # checking piece by piece if the user can be updated to the payload:
+    # user wants to update email address
+    if user.email is not payload['email']:
+        found = User.query.filter_by(email=payload['email']).first()
+        if found is not None and user.id is not found.id:
+            abort(400, 'email already taken')
+    # user wants to update username
+    if user.username is not payload['username']:
+        found = User.query.filter_by(username=payload['username']).first()
+        if found is not None and user.id is not found.id:
+            abort(400, 'username already taken')
+
+    user.username = payload['username']
+    user.email = payload['email']
+    user.firstname = payload['firstname']
+    user.lastname = payload['lastname']
+    user.save()
+
+    return make_response(jsonify({'id': user.id,
+                                  'firstname': user.firstname,
+                                  'lastname': user.lastname,
+                                  'email': user.email,
+                                  'username': user.username}))
+
 
 
 #                            #
@@ -113,6 +163,12 @@ def classify():
 def bad_request(error):
     """Error handler to build 400 error in JSON."""
     return make_response(jsonify({'error': error.description}), 400)
+
+
+@api.errorhandler(401)
+def illegal_request(error):
+    """Error handler to build 401 error thrown in the application in JSON."""
+    return make_response(jsonify({'error': error.description}), 401)
 
 
 @api.errorhandler(404)
