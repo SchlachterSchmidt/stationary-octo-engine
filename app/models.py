@@ -3,6 +3,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.sql import func
 import datetime
 
 from .helpers.s3_helper import upload_file_to_s3
@@ -22,8 +23,9 @@ class User(db.Model):
                          index=True, nullable=False, unique=True)
     password_hash = db.Column(db.String(120), nullable=False)
     active = db.Column(db.Boolean, index=True, nullable=False, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
     images = db.relationship('ImageRef', backref='user', lazy=True)
     history = db.relationship('HistoryRecord', backref='user', lazy=True)
 
@@ -54,7 +56,7 @@ class ImageRef(db.Model):
         db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)
     link = db.Column(db.String(200), index=True, nullable=False)
     predicted_label = db.Column(db.String(10), index=True, nullable=False)
-    taken_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    taken_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     c0 = db.Column(db.Float)
     c1 = db.Column(db.Float)
     c2 = db.Column(db.Float)
@@ -66,12 +68,13 @@ class ImageRef(db.Model):
     c8 = db.Column(db.Float)
     c9 = db.Column(db.Float)
 
-    def __init__(self, image, prediction, probabilities, user, fileStoreObj):
+    def __init__(self, image, prediction, probabilities,
+                 username, fileStoreObj):
         """Extract class variables from the provided params."""
         self.image = image
         self.fileStoreObj = fileStoreObj
 
-        self.user_id = User.query.filter_by(username=user).first().id,
+        self.user_id = User.query.filter_by(username=username).first().id,
         self.predicted_label = prediction
         self.c0 = probabilities[0]
         self.c1 = probabilities[1]
@@ -103,8 +106,19 @@ class HistoryRecord(db.Model):
     user_id = db.Column(
         db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)
     history = db.Column(JSON)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
+
+    def __init__(self, username, content):
+        """Init object with user_id extracted from params, and history."""
+        self.user_id = User.query.filter_by(username=username).first().id
+        self.history = content
+
+    def save(self):
+        """Store history record to DB."""
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         """History representation."""
