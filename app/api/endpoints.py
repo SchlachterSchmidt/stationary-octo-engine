@@ -155,6 +155,31 @@ def classify():
                                   'probabilities': probabilities}), 200)
 
 
+@api.route('/api/v0.1/classifier', methods=['GET'])
+@auth.login_required
+def get_results():
+    limit = request.args.get('limit', 50)
+    offset = request.args.get('offset', 0)
+
+    requester = User.query.filter_by(
+        username=request.authorization.username).first()
+    results = ImageRef.query.filter_by(
+        user_id=requester.id).limit(limit).offset(offset).all()
+
+    if results is None:
+        abort(404)
+
+    json_results = []
+    for result in results:
+        d = {'id': result.id,
+             'link': result.link,
+             'predicted_label': result.predicted_label,
+             'taken_at' :result.taken_at}
+        json_results.append(d)
+
+    return make_response(jsonify(results=json_results), 200)
+
+
 #                           #
 #    UTILS AND CALLBACKS    #
 #                           #
