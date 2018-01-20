@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.sql import func
-import datetime
 
 from .helpers.s3_helper import upload_file_to_s3
 
