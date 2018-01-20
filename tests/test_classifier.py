@@ -148,7 +148,8 @@ class ClassifierTestCase(unittest.TestCase):
             name = 'illegal file.jpg'
 
         with open(path, 'rb') as image:
-            headers = dict(Authorization="Basic " + self.b64_user_and_credentials,
+            headers = dict(Authorization="Basic " +
+                           self.b64_user_and_credentials,
                            Content_type="multipart/form-data")
             # image data as byte stream, in 'data' field of request
             payload = dict(data=(io.BytesIO(image.read()), name))
