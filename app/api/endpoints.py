@@ -166,7 +166,7 @@ def get_results():
     results = ImageRef.query.filter_by(
         user_id=requester.id).limit(limit).offset(offset).all()
 
-    if results is None:
+    if not results:
         abort(404)
 
     json_results = []
@@ -199,7 +199,7 @@ def illegal_request(error):
 @api.errorhandler(404)
 def not_found(error):
     """Error handler to build 404 in JSON."""
-    return make_response(jsonify({'error': 'Not found'}), 404)
+    return make_response(jsonify({'error': 'not found'}), 404)
 
 
 @auth.verify_password
