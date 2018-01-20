@@ -2,8 +2,10 @@
 
 import unittest
 import json
+import io
 from app import create_app
 from app.models import db
+from base64 import b64encode
 
 
 class HistoryTestCase(unittest.TestCase):
@@ -20,25 +22,72 @@ class HistoryTestCase(unittest.TestCase):
                           'email': 'hans.gruber@nakatomi.com',
                           'password': 'python'}
 
-    def test_create_new_history_record():
-        """Returns 200 and 'record created' message."""
-        # TODO: everything
-        pass
+        self.b64_user_and_credentials = str(b64encode(b'hansi:python'))[2:-1]
 
-    def test_add_to_existing_history_record():
-        """Returns 200 and 'record updated' message."""
-        # TODO: everything
-        pass
+        with self.app.app_context():
+            db.create_all()
 
-    def test_get_existing_history_record():
-        """Returns 200 and history object as JSON"""
-        # TODO: everything
-        pass
+    def test_get_history_records_no_url_params(self):
+        """Returns 200 and history collection."""
+        # create test user
+        userCreateResponse = self.create_test_user()
+        # post a few images for classification, creating the history
+        postResponses = []
+        for i in range(5):
+            response = self.post_image_for_classification()
+            postResponses.append(response)
 
-    def test_get_non_existing_history_record():
+        # get history collection
+        headers = dict(Authorization="Basic " + self.b64_user_and_credentials)
+        getHistoryResponse = self.client.get('api/v0.1/classifier',
+                                             headers=headers)
+
+        # assert that test user was created and the history was returned
+        self.assertEqual(userCreateResponse.status_code, 201)
+        self.assertEqual(getHistoryResponse.status_code, 200)
+        # assert that the response is as expected
+        self.assertIn('link', str(getHistoryResponse.data))
+        self.assertIn('test.jpg', str(getHistoryResponse.data))
+        self.assertIn('predicted_label', str(getHistoryResponse.data))
+        self.assertIn('taken_at', str(getHistoryResponse.data))
+
+    def test_get_history_record_with_url_parameters(self):
+        """Returns 200 and history collection."""
+        # create test user
+        userCreateResponse = self.create_test_user()
+        # post a few images for classification, creating the history
+        postResponses = []
+        for i in range(5):
+            response = self.post_image_for_classification()
+            postResponses.append(response)
+
+        # get history collection
+        headers = dict(Authorization="Basic " + self.b64_user_and_credentials)
+        getHistoryResponse = self.client.get(
+                                'api/v0.1/classifier?limit=1&offset=2',
+                                headers=headers)
+        # assert that test user was created and the history was returned
+        self.assertEqual(userCreateResponse.status_code, 201)
+        self.assertEqual(getHistoryResponse.status_code, 200)
+        # assert that the response is as expected
+        self.assertIn('link', str(getHistoryResponse.data))
+        self.assertIn('test.jpg', str(getHistoryResponse.data))
+        self.assertIn('predicted_label', str(getHistoryResponse.data))
+        self.assertIn('taken_at', str(getHistoryResponse.data))
+        self.assertIn('"id": 3', str(getHistoryResponse.data))
+
+    def test_get_history_record_not_found(self):
         """Returns 404 and 'record not found' message"""
-        # TODO: everything
-        pass
+        # create test user
+        userCreateResponse = self.create_test_user()
+        # get history collection
+        headers = dict(Authorization="Basic " + self.b64_user_and_credentials)
+        getHistoryResponse = self.client.get('api/v0.1/classifier',
+                                             headers=headers)
+
+        self.assertEqual(userCreateResponse.status_code, 201)
+        self.assertEqual(getHistoryResponse.status_code, 404)
+        self.assertIn('record not found', str(getHistoryResponse.data))
 
     def tearDown(self):
         """Teardown all initialized variables."""
@@ -46,6 +95,27 @@ class HistoryTestCase(unittest.TestCase):
             # drop all tables
             db.session.remove()
             db.drop_all()
+
+    def create_test_user(self):
+        """Util method to create new test user."""
+        res = self.client.post('api/v0.1/users',
+                               data=json.dumps(self.test_user),
+                               content_type='application/json')
+        return res
+
+    def post_image_for_classification(self):
+        """Util method to post image to classifier."""
+        with open('tests/static/test_img.jpg', 'rb') as image:
+            headers = dict(Authorization="Basic " +
+                           self.b64_user_and_credentials,
+                           Content_type="multipart/form-data")
+            # image data as byte stream, in 'data' field of request
+            payload = dict(data=(io.BytesIO(image.read()), 'test.jpg'))
+
+            postResponse = self.client.post('api/v0.1/classifier',
+                                              headers=headers,
+                                              data=payload)
+            return postResponse
 
 
 if __name__ == "__main__":
