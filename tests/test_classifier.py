@@ -23,7 +23,7 @@ class ClassifierTestCase(unittest.TestCase):
                           'password': 'python'}
 
         # base 64 encoded version of the username and password
-        self.user_and_credentials = str(b64encode(b'hansi:python'))[2:-1]
+        self.b64_user_and_credentials = str(b64encode(b'hansi:python'))[2:-1]
 
         with self.app.app_context():
             db.create_all()
@@ -32,48 +32,24 @@ class ClassifierTestCase(unittest.TestCase):
         """Returns 200 and classification result."""
 
         # create test user to use in request
-        createUser = self.client.post('api/v0.1/users',
-                                        data=json.dumps(self.test_user),
-                                        content_type='application/json')
-
-        with open('tests/static/test_img.jpg', 'rb') as image:
-            headers = dict(Authorization="Basic " + self.user_and_credentials,
-                           Content_type="multipart/form-data")
-            # image data as byte stream, in 'data' field of request
-            payload = dict(data=(io.BytesIO(image.read()), 'test.jpg'))
-
-            postResponse = self.client.post('api/v0.1/classifier',
-                                              headers=headers,
-                                              data=payload)
+        createUser = self.create_test_user()
+        postResponse = self.post_image_for_classification('supported')
 
         # assert user was created
         self.assertEqual(createUser.status_code, 201)
         # assert response code and message are as expected
         self.assertEqual(postResponse.status_code, 200)
         self.assertIn('filename', str(postResponse.data))
-        self.assertIn('test.jpg', str(postResponse.data))
+        self.assertIn('test_img.jpg', str(postResponse.data))
         self.assertIn('prediction', str(postResponse.data))
         self.assertIn('probabilities', str(postResponse.data))
 
-    def test_classify_unsupported_file_type(self):
+    def test_classify_fails_with_unsupported_file_type(self):
         """Returns 400 and 'illegal file type' if type is not supported"""
 
         # create test user to use in request
-        createUser = self.client.post('api/v0.1/users',
-                                        data=json.dumps(self.test_user),
-                                        content_type='application/json')
-
-        with open('tests/static/test_textfile.txt', 'rb') as textfile:
-            headers = dict(Authorization="Basic " + self.user_and_credentials,
-                           Content_type="multipart/form-data")
-
-            # textfile data as byte stream, in 'data' field of request
-            payload = dict(data=(io.BytesIO(textfile.read()),
-                                 'test_textfile.txt'))
-
-            postResponse = self.client.post('api/v0.1/classifier',
-                                              headers=headers,
-                                              data=payload)
+        createUser = self.create_test_user()
+        postResponse = self.post_image_for_classification('not_supported')
 
         # assert user was created
         self.assertEqual(createUser.status_code, 201)
@@ -81,24 +57,12 @@ class ClassifierTestCase(unittest.TestCase):
         self.assertEqual(postResponse.status_code, 400)
         self.assertIn('illegal file type', str(postResponse.data))
 
-    def test_classify_illegal_file_name(self):
+    def test_classify_illegal_file_name_is_sanitized(self):
         """Returns 200 and sanitized file name if name is illegal"""
 
         # create test user to use in request
-        createUser = self.client.post('api/v0.1/users',
-                                        data=json.dumps(self.test_user),
-                                        content_type='application/json')
-
-        with open('tests/static/test_img.jpg', 'rb') as image:
-            headers = dict(Authorization="Basic " + self.user_and_credentials,
-                           Content_type="multipart/form-data")
-
-            # image data as byte stream, in 'data' field of request
-            payload = dict(data=(io.BytesIO(image.read()), 'illegal file.jpg'))
-
-            postResponse = self.client.post('api/v0.1/classifier',
-                                              headers=headers,
-                                              data=payload)
+        createUser = self.create_test_user()
+        postResponse = self.post_image_for_classification('illegal_file')
 
         # assert user was created
         self.assertEqual(createUser.status_code, 201)
@@ -110,33 +74,21 @@ class ClassifierTestCase(unittest.TestCase):
         self.assertIn('prediction', str(postResponse.data))
         self.assertIn('probabilities', str(postResponse.data))
 
-
-    def test_classify_fail_when_unauthorized(self):
+    def test_classify_fails_when_user_is_unauthorized(self):
         """Returns 401 and 'not authorized' if credentials are wrong"""
 
-        with open('tests/static/test_img.jpg', 'rb') as image:
-            headers = dict(Authorization="Basic " + 'incorrect:credentials',
-                           Content_type="multipart/form-data")
-
-            # image data as byte stream, in 'data' field of request
-            payload = dict(data=(io.BytesIO(image.read()), 'test.jpg'))
-
-            postResponse = self.client.post('api/v0.1/classifier',
-                                              headers=headers,
-                                              data=payload)
+        postResponse = self.post_image_for_classification('supported')
 
         self.assertEqual(postResponse.status_code, 401)
         self.assertIn('not authorized', str(postResponse.data))
 
-    def test_classify_fail_when_no_image(self):
+    def test_classify_fails_when_no_image_in_request(self):
         """Returns 400 and 'no file' if no image is provided"""
 
         # create test user to use in request
-        createUser = self.client.post('api/v0.1/users',
-                                        data=json.dumps(self.test_user),
-                                        content_type='application/json')
+        createUser = self.create_test_user()
 
-        headers = dict(Authorization="Basic " + self.user_and_credentials,
+        headers = dict(Authorization="Basic " + self.b64_user_and_credentials,
                        Content_type="multipart/form-data")
 
         postResponse = self.client.post('api/v0.1/classifier',
@@ -155,7 +107,7 @@ class ClassifierTestCase(unittest.TestCase):
 #                                        data=json.dumps(self.test_user),
 #                                        content_type='application/json')
 #
-#        headers = dict(Authorization="Basic " + self.user_and_credentials,
+#        headers = dict(Authorization="Basic " + self.b64_user_and_credentials,
 #                       Content_type="multipart/form-data")
 #
 #        payload = dict(data=('', 'test.jpg'))
@@ -175,6 +127,36 @@ class ClassifierTestCase(unittest.TestCase):
             # drop all tables
             db.session.remove()
             db.drop_all()
+
+    def create_test_user(self):
+        """Util method to create new test user."""
+        res = self.client.post('api/v0.1/users',
+                               data=json.dumps(self.test_user),
+                               content_type='application/json')
+        return res
+
+    def post_image_for_classification(self, flag):
+        """Util method to post image to classifier."""
+        if flag is 'not_supported':
+            path = 'tests/static/test_textfile.txt'
+            name = 'test_textfile.txt'
+        if flag is 'supported':
+            path = 'tests/static/test_img.jpg'
+            name = 'test_img.jpg'
+        if flag is 'illegal_file':
+            path = 'tests/static/test_img.jpg'
+            name = 'illegal file.jpg'
+
+        with open(path, 'rb') as image:
+            headers = dict(Authorization="Basic " + self.b64_user_and_credentials,
+                           Content_type="multipart/form-data")
+            # image data as byte stream, in 'data' field of request
+            payload = dict(data=(io.BytesIO(image.read()), name))
+
+            postResponse = self.client.post('api/v0.1/classifier',
+                                              headers=headers,
+                                              data=payload)
+            return postResponse
 
 
 if __name__ == "__main__":
