@@ -19,7 +19,7 @@ auth = HTTPBasicAuth()
 #    HELLO WORLD API CALL    #
 #                            #
 
-@api.route('/api/v0.1/hello', methods=['GET'])
+@api.route('/api/v0.1/health', methods=['GET'])
 def hello():
     """Hello World API call."""
     return make_response(jsonify({'hello': 'world'}), 200)
