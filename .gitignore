@@ -18,3 +18,8 @@ __pycache__
 migrations
 migrations/*
 app/static/*.h5
+
+### test coverage files
+htmlcov
+htmlcov/*
+.coverage
