@@ -29,7 +29,7 @@ class HistoryTestCase(unittest.TestCase):
 
     def test_get_history_records_no_url_params(self):
         """Returns 200 and history collection."""
-        # create test user
+        # create test user
         userCreateResponse = self.create_test_user()
         # post a few images for classification, creating the history
         postResponses = []
@@ -37,15 +37,15 @@ class HistoryTestCase(unittest.TestCase):
             response = self.post_image_for_classification()
             postResponses.append(response)
 
-        # get history collection
+        # get history collection
         headers = dict(Authorization="Basic " + self.b64_user_and_credentials)
         getHistoryResponse = self.client.get('api/v0.1/classifier',
                                              headers=headers)
 
-        # assert that test user was created and the history was returned
+        # assert that test user was created and the history was returned
         self.assertEqual(userCreateResponse.status_code, 201)
         self.assertEqual(getHistoryResponse.status_code, 200)
-        # assert that the response is as expected
+        # assert that the response is as expected
         self.assertIn('link', str(getHistoryResponse.data))
         self.assertIn('test.jpg', str(getHistoryResponse.data))
         self.assertIn('predicted_label', str(getHistoryResponse.data))
@@ -53,7 +53,7 @@ class HistoryTestCase(unittest.TestCase):
 
     def test_get_history_record_with_url_parameters(self):
         """Returns 200 and history collection."""
-        # create test user
+        # create test user
         userCreateResponse = self.create_test_user()
         # post a few images for classification, creating the history
         postResponses = []
@@ -61,15 +61,15 @@ class HistoryTestCase(unittest.TestCase):
             response = self.post_image_for_classification()
             postResponses.append(response)
 
-        # get history collection
+        # get history collection
         headers = dict(Authorization="Basic " + self.b64_user_and_credentials)
         getHistoryResponse = self.client.get(
                                 'api/v0.1/classifier?limit=1&offset=2',
                                 headers=headers)
-        # assert that test user was created and the history was returned
+        # assert that test user was created and the history was returned
         self.assertEqual(userCreateResponse.status_code, 201)
         self.assertEqual(getHistoryResponse.status_code, 200)
-        # assert that the response is as expected
+        # assert that the response is as expected
         self.assertIn('link', str(getHistoryResponse.data))
         self.assertIn('test.jpg', str(getHistoryResponse.data))
         self.assertIn('predicted_label', str(getHistoryResponse.data))
@@ -78,9 +78,9 @@ class HistoryTestCase(unittest.TestCase):
 
     def test_get_history_record_not_found(self):
         """Returns 404 and 'record not found' message"""
-        # create test user
+        # create test user
         userCreateResponse = self.create_test_user()
-        # get history collection
+        # get history collection
         headers = dict(Authorization="Basic " + self.b64_user_and_credentials)
         getHistoryResponse = self.client.get('api/v0.1/classifier',
                                              headers=headers)
@@ -109,12 +109,12 @@ class HistoryTestCase(unittest.TestCase):
             headers = dict(Authorization="Basic " +
                            self.b64_user_and_credentials,
                            Content_type="multipart/form-data")
-            # image data as byte stream, in 'data' field of request
+            # image data as byte stream, in 'data' field of request
             payload = dict(data=(io.BytesIO(image.read()), 'test.jpg'))
 
             postResponse = self.client.post('api/v0.1/classifier',
-                                              headers=headers,
-                                              data=payload)
+                                            headers=headers,
+                                            data=payload)
             return postResponse
 
 
