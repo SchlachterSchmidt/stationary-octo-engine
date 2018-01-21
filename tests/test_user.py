@@ -19,13 +19,15 @@ class UserTestCase(unittest.TestCase):
                          'firstname': 'Hans',
                          'lastname': 'Gruber',
                          'email': 'hans.gruber@nakatomi.com',
-                         'password': 'python'}
+                         'password': 'python',
+                         'active': 'true'}
 
         self.user_two = {'username': 'johnboy',
                          'firstname': 'John',
                          'lastname': 'McClane',
                          'email': 'john.mcclane@nypd.com',
-                         'password': 'yippykayay'}
+                         'password': 'yippykayay',
+                         'active': 'true'}
 
         self.b64_user_one_credentials = str(b64encode(b'hansi:python'))[2:-1]
 
@@ -80,6 +82,20 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(updateUserRes.status_code, 200)
         self.assertIn('Hans_updated', str(updateUserRes.data))
         self.assertIn('Gruber_updated', str(updateUserRes.data))
+
+    def test_user_deactivate(self):
+        """Return 200 and confirmation user is deactivated."""
+        # create test user
+        createUserRes = self.create_test_user(user=self.user_one)
+
+        # get ID of new user, update user dict, and put request
+        user_id = json.loads(createUserRes.get_data(as_text=True))['id']
+        self.user_one['active'] = 'false'
+        updateUserRes = self.update_test_user(user_id, user=self.user_one)
+
+        self.assertEqual(createUserRes.status_code, 201)
+        self.assertEqual(updateUserRes.status_code, 200)
+        self.assertIn('"active": false', str(updateUserRes.data))
 
     def test_user_update_fails_when_email_is_taken(self):
         """Return 400 when updating user email address in use."""

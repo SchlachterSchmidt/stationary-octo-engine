@@ -72,7 +72,7 @@ def get_user(user_id):
     user = User.query.get_or_404(user_id)
     requester = User.query.filter_by(
         username=request.authorization.username).first()
-    # if user making the request is not the same user that is being updated:
+    # if user making the request is not the same user that is being retrieved:
     if user.id is not requester.id:
         abort(401, 'you do not have access to this')
     return make_response(jsonify({'id': user.id,
@@ -111,13 +111,15 @@ def update_user(user_id):
     user.email = payload['email']
     user.firstname = payload['firstname']
     user.lastname = payload['lastname']
+    user.active = payload['active']
     user.save()
 
     return make_response(jsonify({'id': user.id,
                                   'firstname': user.firstname,
                                   'lastname': user.lastname,
                                   'email': user.email,
-                                  'username': user.username}))
+                                  'username': user.username,
+                                  'active': user.active}))
 
 
 
