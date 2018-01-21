@@ -2,7 +2,6 @@
 
 from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
-from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.sql import func
 
 from .helpers.s3_helper import upload_file_to_s3
@@ -26,7 +25,6 @@ class User(db.Model):
                            server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
     images = db.relationship('ImageRef', backref='user', lazy=True)
-    history = db.relationship('HistoryRecord', backref='user', lazy=True)
 
     def hash_password(self, password):
         """Hash plain text user password and store."""
@@ -56,6 +54,7 @@ class ImageRef(db.Model):
     link = db.Column(db.String(200), index=True, nullable=False)
     predicted_label = db.Column(db.String(10), index=True, nullable=False)
     taken_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    distraction_score = db.Column(db.Float, index=True, nullable=False)
     c0 = db.Column(db.Float)
     c1 = db.Column(db.Float)
     c2 = db.Column(db.Float)
@@ -68,11 +67,11 @@ class ImageRef(db.Model):
     c9 = db.Column(db.Float)
 
     def __init__(self, image, prediction, probabilities,
-                 username, fileStoreObj):
+                 username, fileStoreObj, distraction_score):
         """Extract class variables from the provided params."""
         self.image = image
         self.fileStoreObj = fileStoreObj
-
+        self.distraction_score = distraction_score
         self.user_id = User.query.filter_by(username=username).first().id,
         self.predicted_label = prediction
         self.c0 = probabilities[0]
@@ -95,30 +94,3 @@ class ImageRef(db.Model):
     def __repr__(self):
         """Image representation."""
         return self.link
-
-
-class HistoryRecord(db.Model):
-    """Stores attention history of a user in json."""
-
-    __tablename__ = 'history_records'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(
-        db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)
-    history = db.Column(JSON)
-    created_at = db.Column(db.DateTime(timezone=True),
-                           server_default=func.now())
-    updated_at = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-
-    def __init__(self, username, content):
-        """Init object with user_id extracted from params, and history."""
-        self.user_id = User.query.filter_by(username=username).first().id
-        self.history = content
-
-    def save(self):
-        """Store history record to DB."""
-        db.session.add(self)
-        db.session.commit()
-
-    def __repr__(self):
-        """History representation."""
-        return '<History object for user id: %d>' % (self.id)
