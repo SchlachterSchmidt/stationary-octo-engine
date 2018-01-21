@@ -43,10 +43,10 @@ class UserTestCase(unittest.TestCase):
 
     def test_user_create_username_is_taken(self):
         """Return 400 and 'username already taken' if username is taken."""
-        # create first test user
+        # create first test user
         createUserOneRes = self.create_test_user(user=self.user_one)
 
-        # set email of second test user to username in use and try to create
+        # set email of second test user to username in use and try to create
         self.user_two['username'] = self.user_one['username']
         createUserTwoRes = self.create_test_user(user=self.user_two)
 
@@ -56,10 +56,10 @@ class UserTestCase(unittest.TestCase):
 
     def test_user_create_email_is_taken(self):
         """Return 400 and 'email already taken' if email is taken."""
-        # create first test user
+        # create first test user
         createUserOneRes = self.create_test_user(user=self.user_one)
 
-        # set user two email to address already in use and try to create
+        # set user two email to address already in use and try to create
         self.user_two['email'] = self.user_one['email']
         createUserTwoRes = self.create_test_user(user=self.user_two)
 
@@ -69,10 +69,10 @@ class UserTestCase(unittest.TestCase):
 
     def test_user_update_name(self):
         """Return 200 and updated user details."""
-        # create test user
+        # create test user
         createUserRes = self.create_test_user(user=self.user_one)
 
-        # get ID of new user, update user dict, and put request
+        # get ID of new user, update user dict, and put request
         user_id = json.loads(createUserRes.get_data(as_text=True))['id']
         self.user_one['firstname'] = 'Hans_updated'
         self.user_one['lastname'] = 'Gruber_updated'
@@ -85,10 +85,10 @@ class UserTestCase(unittest.TestCase):
 
     def test_user_deactivate(self):
         """Return 200 and confirmation user is deactivated."""
-        # create test user
+        # create test user
         createUserRes = self.create_test_user(user=self.user_one)
 
-        # get ID of new user, update user dict, and put request
+        # get ID of new user, update user dict, and put request
         user_id = json.loads(createUserRes.get_data(as_text=True))['id']
         self.user_one['active'] = 'false'
         updateUserRes = self.update_test_user(user_id, user=self.user_one)
@@ -99,7 +99,7 @@ class UserTestCase(unittest.TestCase):
 
     def test_user_update_fails_when_email_is_taken(self):
         """Return 400 when updating user email address in use."""
-        # create test user
+        # create test user
         createUserOneRes = self.create_test_user(user=self.user_one)
         createUserTwoRes = self.create_test_user(user=self.user_two)
 
@@ -115,7 +115,7 @@ class UserTestCase(unittest.TestCase):
 
     def test_user_update_fails_when_username_is_taken(self):
         """Return 400 when updating user email address in use."""
-        # create test user
+        # create test user
         createUserOneRes = self.create_test_user(user=self.user_one)
         createUserTwoRes = self.create_test_user(user=self.user_two)
 
@@ -131,14 +131,14 @@ class UserTestCase(unittest.TestCase):
 
     def test_user_update_fails_when_updating_different_user_account(self):
         """Return 401 when updating another users account."""
-        # create test user
+        # create test user
         createUserOneRes = self.create_test_user(user=self.user_one)
         createUserTwoRes = self.create_test_user(user=self.user_two)
 
         # get user id of first test user, update user dict and update request
         user_two_id = json.loads(createUserTwoRes.get_data(as_text=True))['id']
         self.user_two['username'] = 'Johnny_updated'
-        # updating user two with auth header of user one
+        # updating user two with auth header of user one
         updateUserTwoRes = self.update_test_user(user_two_id,
                                                  user=self.user_two)
 
@@ -166,8 +166,8 @@ class UserTestCase(unittest.TestCase):
         """Util method to update existing test user."""
         # construct authorization header
         headers = dict(Authorization="Basic " + self.b64_user_one_credentials)
-        res= self.client.put('api/v0.1/users/%s' % id, data=json.dumps(user),
-                             headers=headers, content_type='application/json')
+        res = self.client.put('api/v0.1/users/%s' % id, data=json.dumps(user),
+                              headers=headers, content_type='application/json')
         return res
 
 
