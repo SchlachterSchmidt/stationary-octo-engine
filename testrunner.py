@@ -42,6 +42,16 @@ def users():
 
 
 @manager.command
+def other():
+    """Run the 'other' unit tests in /tests dir."""
+    tests = unittest.TestLoader().discover('./tests',
+                                           pattern='test_other*.py')
+    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    if result.wasSuccessful():
+        return 0
+    return 1
+
+@manager.command
 def full():
     """Run all unit tests in /tests dir."""
     tests = unittest.TestLoader().discover('./tests', pattern='test*.py')
