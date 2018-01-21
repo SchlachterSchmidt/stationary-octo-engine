@@ -41,6 +41,80 @@ class UserTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
         self.assertIn(self.user_one['username'], str(res.data))
 
+    def test_user_get_account_details(self):
+        """Return 200 and user details"""
+        createUserRes = self.create_test_user(user=self.user_one)
+        user_id = json.loads(createUserRes.get_data(as_text=True))['id']
+        headers = dict(Authorization="Basic " + self.b64_user_one_credentials)
+        getUserRes = self.client.get('api/v0.1/users/%d' % user_id,
+                                     headers=headers)
+
+        self.assertEqual(createUserRes.status_code, 201)
+        self.assertIn('"firstname": "Hans"', str(getUserRes.data))
+        self.assertIn('"lastname": "Gruber"', str(getUserRes.data))
+        self.assertIn('"email": "hans.gruber@nakatomi.com"',
+                      str(getUserRes.data))
+
+    def test_user_create_firstname_missing(self):
+        """Return 400 and 'required parameter missing' if firstname missing."""
+        user = {'username': 'johnboy',
+                'lastname': 'McClane',
+                'email': 'john.mcclane@nypd.com',
+                'password': 'yippykayay',
+                'active': 'true'}
+
+        createUserRes = self.create_test_user(user)
+        self.assertEqual(createUserRes.status_code, 400)
+        self.assertIn('required parameter missing', str(createUserRes.data))
+
+    def test_user_create_lastname_missing(self):
+        """Return 400 and 'required parameter missing' if lastname missing."""
+        user = {'username': 'johnboy',
+                'firstname': 'John',
+                'email': 'john.mcclane@nypd.com',
+                'password': 'yippykayay',
+                'active': 'true'}
+
+        createUserRes = self.create_test_user(user)
+        self.assertEqual(createUserRes.status_code, 400)
+        self.assertIn('required parameter missing', str(createUserRes.data))
+
+    def test_user_create_username_missing(self):
+        """Return 400 and 'required parameter missing' if username missing."""
+        user = {'lastname': 'McClane',
+                'firstname': 'John',
+                'email': 'john.mcclane@nypd.com',
+                'password': 'yippykayay',
+                'active': 'true'}
+
+        createUserRes = self.create_test_user(user)
+        self.assertEqual(createUserRes.status_code, 400)
+        self.assertIn('required parameter missing', str(createUserRes.data))
+
+    def test_user_create_email_missing(self):
+        """Return 400 and 'required parameter missing' if email missing."""
+        user = {'lastname': 'McClane',
+                'firstname': 'John',
+                'username': 'johnboy',
+                'password': 'yippykayay',
+                'active': 'true'}
+
+        createUserRes = self.create_test_user(user)
+        self.assertEqual(createUserRes.status_code, 400)
+        self.assertIn('required parameter missing', str(createUserRes.data))
+
+    def test_user_create_password_missing(self):
+        """Return 400 and 'required parameter missing' if password missing."""
+        user = {'lastname': 'McClane',
+                'firstname': 'John',
+                'username': 'johnboy',
+                'email': 'john.mcclane@nypd.com',
+                'active': 'true'}
+
+        createUserRes = self.create_test_user(user)
+        self.assertEqual(createUserRes.status_code, 400)
+        self.assertIn('required parameter missing', str(createUserRes.data))
+
     def test_user_create_username_is_taken(self):
         """Return 400 and 'username already taken' if username is taken."""
         # create first test user
