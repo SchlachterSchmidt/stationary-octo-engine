@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from . import api
 from ..models import User, ImageRef
 from ..classifier import Classifier
+from ..helpers.aggregator import aggregate_score
 
 
 classifier = Classifier()
@@ -72,7 +73,7 @@ def get_user(user_id):
     user = User.query.get_or_404(user_id)
     requester = User.query.filter_by(
         username=request.authorization.username).first()
-    # if user making the request is not the same user that is being retrieved:
+    # if user making the request is not the same user that is being retrieved:
     if user.id is not requester.id:
         abort(401, 'you do not have access to this')
     return make_response(jsonify({'id': user.id,
@@ -89,13 +90,13 @@ def update_user(user_id):
     user = User.query.get_or_404(user_id)
     requester = User.query.filter_by(
         username=request.authorization.username).first()
-    # if user making the request is not the same user that is being updated:
+    # if user making the request is not the same user that is being updated:
     if user.id is not requester.id:
         abort(401, 'you do not have access to this')
 
     payload = request.get_json()
 
-    # checking piece by piece if the user can be updated to the payload:
+    # checking piece by piece if the user can be updated to the payload:
     # user wants to update email address
     if user.email is not payload['email']:
         found = User.query.filter_by(email=payload['email']).first()
@@ -122,7 +123,6 @@ def update_user(user_id):
                                   'active': user.active}))
 
 
-
 #                            #
 #    CLASSIFIER API BLOCK    #
 #                            #
@@ -131,6 +131,11 @@ def update_user(user_id):
 @auth.login_required
 def classify():
     """Accept image file and return classification."""
+
+    if 'prev_score' not in request.form:
+        abort(400, 'need previous score')
+    prev_score = float(request.form['prev_score'])
+
     if 'data' not in request.files:
         abort(400, 'no file in request')
     fileStoreObj = request.files['data']
@@ -143,18 +148,22 @@ def classify():
 
     image = fileStoreObj.read()
 
-    probabilities, prediction = classifier.classify(image)
+    probabilities, prediction, confidence = classifier.classify(image)
+    score = aggregate_score(prev_score, prediction, confidence)
 
     image_ref = ImageRef(image=image,
                          fileStoreObj=fileStoreObj,
                          prediction=prediction,
                          probabilities=probabilities,
-                         username=request.authorization.username)
+                         username=request.authorization.username,
+                         distraction_score=score)
     image_ref.save()
 
     return make_response(jsonify({'filename': fileStoreObj.filename,
                                   'prediction': prediction,
-                                  'probabilities': probabilities}), 200)
+                                  'probabilities': probabilities,
+                                  'score': score,
+                                  'confidence': confidence}), 200)
 
 
 @api.route('/api/v0.1/classifier', methods=['GET'])
@@ -176,7 +185,7 @@ def get_results():
         d = {'id': result.id,
              'link': result.link,
              'predicted_label': result.predicted_label,
-             'taken_at' :result.taken_at}
+             'taken_at': result.taken_at}
         json_results.append(d)
 
     return make_response(jsonify(results=json_results), 200)
