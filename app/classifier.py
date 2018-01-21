@@ -36,4 +36,7 @@ class Classifier:
         # making prediction on the image and returning probabilities
         # for each class as list (as ndarray are not jsonify-able)
         probabilities = self.model.predict(np_image_tensor).tolist()[0]
-        return probabilities, np.asscalar(np.argmax(probabilities))
+        prediction = np.asscalar(np.argmax(probabilities))
+        # confidence is the probability associated with the predicted class
+        confidence = probabilities[prediction]
+        return probabilities, prediction, confidence
