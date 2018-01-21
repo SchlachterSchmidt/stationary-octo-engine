@@ -110,7 +110,8 @@ class HistoryTestCase(unittest.TestCase):
                            self.b64_user_and_credentials,
                            Content_type="multipart/form-data")
             # image data as byte stream, in 'data' field of request
-            payload = dict(data=(io.BytesIO(image.read()), 'test.jpg'))
+            payload = dict(data=(io.BytesIO(image.read()), 'test.jpg'),
+                           prev_score=5)
 
             postResponse = self.client.post('api/v0.1/classifier',
                                             headers=headers,
