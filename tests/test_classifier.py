@@ -22,7 +22,7 @@ class ClassifierTestCase(unittest.TestCase):
                           'email': 'hans.gruber@nakatomi.com',
                           'password': 'python'}
 
-        # base 64 encoded version of the username and password
+        # base 64 encoded version of the username and password
         self.b64_user_and_credentials = str(b64encode(b'hansi:python'))[2:-1]
 
         with self.app.app_context():
@@ -35,14 +35,16 @@ class ClassifierTestCase(unittest.TestCase):
         createUser = self.create_test_user()
         postResponse = self.post_image_for_classification('supported')
 
-        # assert user was created
+        # assert user was created
         self.assertEqual(createUser.status_code, 201)
-        # assert response code and message are as expected
+        # assert response code and message are as expected
         self.assertEqual(postResponse.status_code, 200)
         self.assertIn('filename', str(postResponse.data))
         self.assertIn('test_img.jpg', str(postResponse.data))
         self.assertIn('prediction', str(postResponse.data))
         self.assertIn('probabilities', str(postResponse.data))
+        self.assertIn('confidence', str(postResponse.data))
+        self.assertIn('score', str(postResponse.data))
 
     def test_classify_fails_with_unsupported_file_type(self):
         """Returns 400 and 'illegal file type' if type is not supported"""
@@ -51,9 +53,9 @@ class ClassifierTestCase(unittest.TestCase):
         createUser = self.create_test_user()
         postResponse = self.post_image_for_classification('not_supported')
 
-        # assert user was created
+        # assert user was created
         self.assertEqual(createUser.status_code, 201)
-        # assert response code and message are as expected
+        # assert response code and message are as expected
         self.assertEqual(postResponse.status_code, 400)
         self.assertIn('illegal file type', str(postResponse.data))
 
@@ -64,15 +66,17 @@ class ClassifierTestCase(unittest.TestCase):
         createUser = self.create_test_user()
         postResponse = self.post_image_for_classification('illegal_file')
 
-        # assert user was created
+        # assert user was created
         self.assertEqual(createUser.status_code, 201)
-        # assert response code and message are as expected
+        # assert response code and message are as expected
         self.assertEqual(postResponse.status_code, 200)
         self.assertIn('filename', str(postResponse.data))
         # assert that the file name now has underscore in it
         self.assertIn('illegal_file.jpg', str(postResponse.data))
         self.assertIn('prediction', str(postResponse.data))
         self.assertIn('probabilities', str(postResponse.data))
+        self.assertIn('confidence', str(postResponse.data))
+        self.assertIn('score', str(postResponse.data))
 
     def test_classify_fails_when_user_is_unauthorized(self):
         """Returns 401 and 'not authorized' if credentials are wrong"""
@@ -90,14 +94,40 @@ class ClassifierTestCase(unittest.TestCase):
 
         headers = dict(Authorization="Basic " + self.b64_user_and_credentials,
                        Content_type="multipart/form-data")
+        payload = dict(prev_score=5)
 
         postResponse = self.client.post('api/v0.1/classifier',
-                                              headers=headers)
+                                        headers=headers,
+                                        data=payload)
 
-        # assert user was created
+        # assert user was created
         self.assertEqual(createUser.status_code, 201)
         self.assertEqual(postResponse.status_code, 400)
         self.assertIn('no file in request', str(postResponse.data))
+
+    def test_classify_fails_when_no_previous_score_provided(self):
+        """Return 400 and 'need previous score' if no score in request"""
+
+        # create test user to use in request
+        createUser = self.create_test_user()
+
+        headers = dict(Authorization="Basic " +
+                       self.b64_user_and_credentials,
+                       Content_type="multipart/form-data")
+
+        path = 'tests/static/test_img.jpg'
+        name = 'test_img.jpg'
+        with open(path, 'rb') as image:
+            # image data as byte stream, in 'data' field of request
+            payload = dict(data=(io.BytesIO(image.read()), name))
+
+            postResponse = self.client.post('api/v0.1/classifier',
+                                            headers=headers,
+                                            data=payload)
+
+        self.assertEqual(createUser.status_code, 201)
+        self.assertEqual(postResponse.status_code, 400)
+        self.assertIn('need previous score', str(postResponse.data))
 
 #    def test_classify_fails_when_image_unreadable(self):
 #        """Returns 400 and 'unable to read file' if image is not readable"""
@@ -116,7 +146,7 @@ class ClassifierTestCase(unittest.TestCase):
 #                                          headers=headers,
 #                                          data=payload)
 #
-#        # assert user was created
+#        # assert user was created
 #        self.assertEqual(createUser.status_code, 201)
 #        self.assertEqual(postResponse.status_code, 400)
 #        self.assertIn('unable to read file', str(postResponse.data))
@@ -151,12 +181,13 @@ class ClassifierTestCase(unittest.TestCase):
             headers = dict(Authorization="Basic " +
                            self.b64_user_and_credentials,
                            Content_type="multipart/form-data")
-            # image data as byte stream, in 'data' field of request
-            payload = dict(data=(io.BytesIO(image.read()), name))
+            # image data as byte stream, in 'data' field of request
+            payload = dict(data=(io.BytesIO(image.read()), name),
+                           prev_score=5)
 
             postResponse = self.client.post('api/v0.1/classifier',
-                                              headers=headers,
-                                              data=payload)
+                                            headers=headers,
+                                            data=payload)
             return postResponse
 
 
