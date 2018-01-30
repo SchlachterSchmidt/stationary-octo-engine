@@ -25,6 +25,25 @@ def hello():
     return make_response(jsonify({'hello': 'world'}), 200)
 
 
+#                               #
+#     SESSIONS API ENDPOINT     #
+#                               #
+
+@api.route('/api/v0.1/login', methods=['POST'])
+def login():
+    """Log in an existing user"""
+    if not verify_password(request.authorization.username,
+                           request.authorization.password):
+                           abort(401, 'username or password not correct')
+    user = User.query.filter_by(
+        username=request.authorization.username).first()
+    return make_response(jsonify({'id': user.id,
+                                  'firstname': user.firstname,
+                                  'lastname': user.lastname,
+                                  'email': user.email,
+                                  'username': user.username}), 200)
+
+
 #                       #
 #    USERS API BLOCK    #
 #                       #
