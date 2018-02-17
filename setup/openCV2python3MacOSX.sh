@@ -2,6 +2,7 @@
 cd ~
 git clone https://github.com/opencv/opencv
 git clone https://github.com/opencv/opencv_contrib
+export CPLUS_INCLUDE_PATH="/Users/pgieschen/anaconda/include/python3.6m/"
 cd ~/opencv
 mkdir build
 cd build
@@ -17,7 +18,7 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
     -D BUILD_opencv_python2=OFF \
     -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules ..
 make -j4
-make install
+sudo make install
 
 
 cd ~/opencv/lib/python3.6/site-packages
