@@ -34,14 +34,15 @@ def login():
     """Log in an existing user"""
     if not verify_password(request.authorization.username,
                            request.authorization.password):
-                           abort(401, 'username or password not correct')
+                           abort(401, 'Username or password not correct')
     user = User.query.filter_by(
         username=request.authorization.username).first()
     return make_response(jsonify({'id': user.id,
                                   'firstname': user.firstname,
                                   'lastname': user.lastname,
                                   'email': user.email,
-                                  'username': user.username}), 200)
+                                  'username': user.username,
+                                  'active': user.active}), 200)
 
 
 #                       #
@@ -82,7 +83,8 @@ def register_user():
                                   'firstname': user.firstname,
                                   'lastname': user.lastname,
                                   'email': user.email,
-                                  'username': user.username}), 201)
+                                  'username': user.username,
+                                  'active': user.active}), 201)
 
 
 @api.route('/api/v0.1/users/<int:user_id>', methods=['GET'])
@@ -99,7 +101,8 @@ def get_user(user_id):
                                   'firstname': user.firstname,
                                   'lastname': user.lastname,
                                   'email': user.email,
-                                  'username': user.username}), 200)
+                                  'username': user.username,
+                                  'active': user.active}), 200)
 
 
 @api.route('/api/v0.1/users/<int:user_id>', methods=['PUT'])
@@ -126,12 +129,20 @@ def update_user(user_id):
         found = User.query.filter_by(username=payload['username']).first()
         if found is not None and user.id is not found.id:
             abort(400, 'username already taken')
+    # appears to be a bug in psycopg2 that facilitates conversion before
+    # writing to DB
+    if payload['active'] == 'False' or payload['active'] == 'false':
+        user.active = False
+    else:
+        user.active = True
 
     user.username = payload['username']
     user.email = payload['email']
     user.firstname = payload['firstname']
     user.lastname = payload['lastname']
-    user.active = payload['active']
+
+    if 'password' in payload:
+        user.hash_password(payload['password'])
     user.save()
 
     return make_response(jsonify({'id': user.id,
@@ -204,7 +215,8 @@ def get_results():
         d = {'id': result.id,
              'link': result.link,
              'predicted_label': result.predicted_label,
-             'taken_at': result.taken_at}
+             'taken_at': result.taken_at,
+             'distraction_score': result.distraction_score}
         json_results.append(d)
 
     return make_response(jsonify(results=json_results), 200)
