@@ -37,6 +37,8 @@ def login():
                            abort(401, 'Username or password not correct')
     user = User.query.filter_by(
         username=request.authorization.username).first()
+    if not user.active == True:
+        abort(401, 'User account deactivated')
     return make_response(jsonify({'id': user.id,
                                   'firstname': user.firstname,
                                   'lastname': user.lastname,
