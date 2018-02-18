@@ -129,9 +129,9 @@ def update_user(user_id):
         found = User.query.filter_by(username=payload['username']).first()
         if found is not None and user.id is not found.id:
             abort(400, 'username already taken')
-    # appears to be a bug in psycopg2 that facilitates conversion before
+    # appears to be a bug in psycopg2 that necessitates conversion before
     # writing to DB
-    if payload['active'] == 'False' or payload['active'] == 'false':
+    if payload['active'] == 'False' or payload['active'] == 'false' or payload['active'] == False:
         user.active = False
     else:
         user.active = True
