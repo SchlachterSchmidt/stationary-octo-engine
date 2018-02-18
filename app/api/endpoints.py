@@ -210,7 +210,7 @@ def get_results():
         user_id=requester.id).limit(limit).offset(offset).all()
 
     if not results:
-        abort(404)
+        abort(404, 'No records found')
 
     json_results = []
     for result in results:
@@ -243,7 +243,9 @@ def illegal_request(error):
 @api.errorhandler(404)
 def not_found(error):
     """Error handler to build 404 in JSON."""
-    return make_response(jsonify({'error': 'not found'}), 404)
+    if error.description is None:
+        error.description = 'Not found'
+    return make_response(jsonify({'error': error.description}), 404)
 
 
 @auth.verify_password
@@ -258,7 +260,7 @@ def verify_password(username, password):
 @auth.error_handler
 def unauthorized():
     """Error handler to build 401 in JSON."""
-    return make_response(jsonify({'error': 'not authorized'}), 401)
+    return make_response(jsonify({'error': 'Not authorized'}), 401)
 
 
 def allowed_file_type(filename):
