@@ -12,7 +12,7 @@ class Classifier:
     def __init__(self):
         """Classifier constructor."""
         model_def = str(Path.cwd().joinpath(
-                        'app/static/CNN_two_convs_30122017.h5'))
+            'app/static/CNN_two_convs_25022018_0900.h5'))
         self.model = load_model(model_def)
         self.model.summary()
 

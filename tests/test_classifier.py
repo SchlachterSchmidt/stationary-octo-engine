@@ -84,7 +84,7 @@ class ClassifierTestCase(unittest.TestCase):
         postResponse = self.post_image_for_classification('supported')
 
         self.assertEqual(postResponse.status_code, 401)
-        self.assertIn('not authorized', str(postResponse.data))
+        self.assertIn('Not authorized', str(postResponse.data))
 
     def test_classify_fails_when_no_image_in_request(self):
         """Returns 400 and 'no file' if no image is provided"""

@@ -20,7 +20,7 @@ def create_app(config_mode='development'):
     db.app = app
     db.init_app(app)
 
-    if config_mode is 'development':
+    if config_mode == 'development':
         print(app.config)
 
     return app

@@ -1,11 +1,16 @@
 """Module containing API endpoints."""
 
+from . import api
+
 from flask import make_response, jsonify, request, abort, current_app
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.utils import secure_filename
 
+import logging
+from logging.handlers import RotatingFileHandler
+from time import strftime
+import traceback
 
-from . import api
 from ..models import User, ImageRef
 from ..classifier import Classifier
 from ..helpers.aggregator import aggregate_score
@@ -13,6 +18,11 @@ from ..helpers.aggregator import aggregate_score
 
 classifier = Classifier()
 auth = HTTPBasicAuth()
+
+handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
+logger = logging.getLogger('__name__')
+logger.setLevel(logging.ERROR)
+logger.addHandler(handler)
 
 
 #                            #
@@ -133,7 +143,9 @@ def update_user(user_id):
             abort(400, 'username already taken')
     # appears to be a bug in psycopg2 that necessitates conversion before
     # writing to DB
-    if payload['active'] == 'False' or payload['active'] == 'false' or payload['active'] == False:
+    if payload['active'] == 'False' or\
+       payload['active'] == 'false' or\
+       payload['active'] == False:
         user.active = False
     else:
         user.active = True
@@ -201,13 +213,14 @@ def classify():
 @api.route('/api/v0.1/classifier', methods=['GET'])
 @auth.login_required
 def get_results():
+    """Return collection of image classification results sorted by timestamp"""
     limit = request.args.get('limit', 50)
     offset = request.args.get('offset', 0)
 
     requester = User.query.filter_by(
         username=request.authorization.username).first()
-    results = ImageRef.query.filter_by(
-        user_id=requester.id).limit(limit).offset(offset).all()
+    results = ImageRef.query.filter_by(user_id=requester.id).order_by(
+        ImageRef.taken_at.asc()).limit(limit).offset(offset).all()
 
     if not results:
         abort(404, 'No records found')
@@ -228,6 +241,19 @@ def get_results():
 #    UTILS AND CALLBACKS    #
 #                           #
 
+@api.before_request
+def before_request():
+    """Execute before calls to log incoming requests"""
+    timestamp = strftime('[%Y-%b-%d %H:%M:%S]')
+    logger.error('%s %s %s %s %s\n%s',
+                 timestamp,
+                 request.remote_addr,
+                 request.method,
+                 request.full_path,
+                 request.environ.get('SERVER_PROTOCOL'),
+                 request.get_data())
+
+
 @api.errorhandler(400)
 def bad_request(error):
     """Error handler to build 400 error in JSON."""
@@ -246,6 +272,37 @@ def not_found(error):
     if error.description is None:
         error.description = 'Not found'
     return make_response(jsonify({'error': error.description}), 404)
+
+
+@api.errorhandler(Exception)
+def exceptions(e):
+    """Handle and log exceptions"""
+    timestamp = strftime('[%Y-%b-%d %H:%M:%S]')
+    traceback = traceback.format_exc()
+    logger.error('exception: %s %s %s %s %s 500 INTERNAL SERVER ERROR\n%s',
+                 timestamp,
+                 request.remote_addr,
+                 request.method,
+                 request.scheme,
+                 request.full_path,
+                 traceback)
+    return make_response(jsonify({'error': 'Internal Server Error'}), 500)
+
+
+@api.after_request
+def after_request(response):
+    """Execute after requests to log responses"""
+    # This if statement avoids the duplication of registry in the log,
+    # since that 500 is already logged via @api.errorhandler.
+    if response.status_code != 500:
+        timestamp = strftime('[%Y-%b-%d %H:%M:%S]')
+        logger.error('%s %s %s %s\n%s',
+                     timestamp,
+                     request.remote_addr,
+                     'HTTP/1.1',
+                     response.status,
+                     response.get_data())
+    return response
 
 
 @auth.verify_password

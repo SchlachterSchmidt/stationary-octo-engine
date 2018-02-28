@@ -87,7 +87,7 @@ class HistoryTestCase(unittest.TestCase):
 
         self.assertEqual(userCreateResponse.status_code, 201)
         self.assertEqual(getHistoryResponse.status_code, 404)
-        self.assertIn('not found', str(getHistoryResponse.data))
+        self.assertIn('No records found', str(getHistoryResponse.data))
 
     def tearDown(self):
         """Teardown all initialized variables."""
