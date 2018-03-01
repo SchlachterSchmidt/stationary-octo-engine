@@ -33,8 +33,8 @@ conda update conda
 conda update anaconda
 conda create -n finalProject python=3.6 anaconda
 source activate finalProject
-conda install pip numpy scipy theano scikit-learn jupyter flask gunicorn psycopg2
-conda install -c conda-forge flask-httpauth flask-sqlalchemy flask-script flask-migrate bcolz
+conda install pip numpy scipy theano scikit-learn jupyter flask gunicorn psycopg2 matplotlib nb_conda
+conda install -c conda-forge flask-httpauth flask-sqlalchemy flask-script flask-migrate bcolz conda
 conda install -c anaconda passlib boto3
 conda install -c menpo opencv3
 pip install keras coverage
