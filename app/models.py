@@ -65,6 +65,7 @@ class ImageRef(db.Model):
     c7 = db.Column(db.Float)
     c8 = db.Column(db.Float)
     c9 = db.Column(db.Float)
+    exported = db.Column(db.Boolean, index=True, nullable=False, default=False)
 
     def __init__(self, image, prediction, probabilities,
                  username, fileStoreObj, distraction_score):
