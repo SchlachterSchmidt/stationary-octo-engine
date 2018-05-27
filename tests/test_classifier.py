@@ -129,28 +129,6 @@ class ClassifierTestCase(unittest.TestCase):
         self.assertEqual(postResponse.status_code, 400)
         self.assertIn('need previous score', str(postResponse.data))
 
-#    def test_classify_fails_when_image_unreadable(self):
-#        """Returns 400 and 'unable to read file' if image is not readable"""
-#
-#        # create test user to use in request
-#        createUser = self.client.post('api/v0.1/users',
-#                                        data=json.dumps(self.test_user),
-#                                        content_type='application/json')
-#
-#        headers = dict(Authorization="Basic " + self.b64_user_and_credentials,
-#                       Content_type="multipart/form-data")
-#
-#        payload = dict(data=('', 'test.jpg'))
-#
-#        postResponse = self.client.post('api/v0.1/classifier',
-#                                          headers=headers,
-#                                          data=payload)
-#
-#        # assert user was created
-#        self.assertEqual(createUser.status_code, 201)
-#        self.assertEqual(postResponse.status_code, 400)
-#        self.assertIn('unable to read file', str(postResponse.data))
-
     def tearDown(self):
         """Teardown all initialized variables."""
         with self.app.app_context():

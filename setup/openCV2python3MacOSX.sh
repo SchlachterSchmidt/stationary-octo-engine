@@ -24,6 +24,5 @@ sudo make install
 cd ~/opencv/lib/python3.6/site-packages
 mv cv2.cpython-36m-darwin.so cv2.so
 
-
 cp cv2.so /Users/phillipgieshen/anaconda/lib/python3.6/site-packages
 cp cv2.so /Users/phillipgieshen/anaconda/env/finalProject/lib/python3.6/site-packages
