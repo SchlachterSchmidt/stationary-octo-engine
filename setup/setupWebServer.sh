@@ -15,8 +15,6 @@ if [ ! -d  "$dir" ]; then
 fi;
 cd $dir
 
-apt-get install nginx
-
 echo ANACONDA ENVIRONMENT
 cd ~
 wget https://repo.continuum.io/archive/Anaconda3-5.0.0.1-Linux-x86_64.sh
@@ -39,22 +37,15 @@ conda install -c anaconda passlib boto3
 conda install -c menpo opencv3
 pip install keras coverage
 
-echo CREATING SAMPLE FLASK app
+echo CREATING FLASK APP DIR
 
-echo "from flask import Flask
-app = Flask(__name__)
-@app.route(\"/\")
-def hello():
-    return \"<h1 style='color:blue'>Hello World!</h1>\"
-if __name__ == \"__main__\":
-    app.run(host='0.0.0.0')" > ~/finalProject/app.py
+mkdir finalProject/app
 
 echo CREATING GUNICORN CONFIG
 
 echo "from app import app
 if __name__ == \"__main__\":
     app.run()" > ~/finalProject/wsgi.py
-
 
 echo DEACTIVATING CONDA ENVIRONMENT
 source deactivate
@@ -74,20 +65,3 @@ WantedBy=multi-user.target" > /etc/systemd/system/finalProject.service
 
 sudo systemctl start finalProject
 sudo systemctl enable finalProject
-
-echo "server {
-    listen 80;
-    server_name $ip;
-    location / {
-        include proxy_params;
-        proxy_pass http://unix:/home/ubuntu/finalProject/finalProject.sock;
-    }
-}" > /etc/nginx/sites-available/finalProject
-
-sudo ln -s /etc/nginx/sites-available/finalProject /etc/nginx/sites-enabled
-sudo systemctl restart nginx
-sudo ufw allow 'Nginx Full'
-
-echo "python app.py to test flask app"
-echo "gunicorn --bind 0.0.0.0:5000 wsgi:app to test gunicorn"
-echo "sudo nginx -t to test Nginx"
